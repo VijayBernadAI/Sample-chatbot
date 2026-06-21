@@ -110,8 +110,15 @@ export default function Chatbot() {
         })
       });
 
+      let errorMessage = "⚠️ Thank you for your inquiry. Our support systems are currently undergoing updates. Please try again shortly or contact FoodFix Hotline at 1-800-FOOD-FIX.";
       if (!response.ok) {
-        throw new Error("Failed to communicate with FoodFix assistant");
+        try {
+          const errData = await response.json();
+          if (errData && errData.error) {
+            errorMessage = `⚠️ Service Error: ${errData.error}`;
+          }
+        } catch (_) {}
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -124,12 +131,12 @@ export default function Chatbot() {
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         },
       ]);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Chat error:", error);
       setMessages((prev) => [
         ...prev,
         {
-          text: "⚠️ Thank you for your inquiry. Our support systems are currently undergoing updates. Please try again shortly or contact FoodFix Hotline at 1-800-FOOD-FIX.",
+          text: error.message || "⚠️ Thank you for your inquiry. Our support systems are currently undergoing updates. Please try again shortly or contact FoodFix Hotline at 1-800-FOOD-FIX.",
           isBot: true,
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         },
